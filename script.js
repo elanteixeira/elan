@@ -1,4 +1,7 @@
- document.getElementById('formContato').addEventListener('submit', function(event) {
+ // Inicialize o EmailJS com seu User ID
+emailjs.init('user_3qMTnnSXSuJM9ihhs');
+
+document.getElementById('formContato').addEventListener('submit', function(event) {
     event.preventDefault();
 
     const nome = this.elements['nome'].value;
@@ -12,6 +15,8 @@
     }, 'user_3qMTnnSXSuJM9ihhs')
     .then(function(response) {
         alert('Email enviado com sucesso!');
+        // Opcional: limpar o formulário após o envio
+        document.getElementById('formContato').reset();
     }, function(error) {
         alert('Erro ao enviar o email: ' + error.text);
     });
