@@ -27,6 +27,12 @@ nav a {
     color: white;
     text-decoration: none;
 }
+nav a:hover {
+    text-decoration: underline;
+}
+
+
+
 .hero {
     height: 90vh;
     display: flex;
