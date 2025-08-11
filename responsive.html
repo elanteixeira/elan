@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Landing Page Responsiva</title>
+<style>
+  /* Reset básico */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  /* Cabeçalho */
+  header {
+    background: #004aad;
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    cursor: default;
+  }
+
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+  }
+
+  nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+
+  nav ul li a:hover {
+    color: #ffc107;
+  }
+
+  /* Botão hamburger para mobile */
+  .menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+  }
+
+  .menu-toggle div {
+    width: 25px;
+    height: 3px;
+    background: white;
+    margin: 4px 0;
+  }
+
+  /* Seção Hero */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: url('https://images.unsplash.com/photo-1506765515384-028b60a970df?auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+    height: 80vh;
+    color: white;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  .hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 6px rgba(0,0,0,0.7);
+  }
+
+  .hero p {
+    font-size: 1.25rem;
+    max-width: 700px;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.6);
+  }
+
+  .btn-primary {
+    background: #ffc107;
+    color: #333;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    box-shadow: 0 5px 15px rgba(255,193,7,0.5);
+  }
+
+  .btn-primary:hover {
+    background: #e6b307;
+  }
+
+  /* Seção serviços */
+  .services {
+    padding: 60px 30px;
+    background: #f9f9f9;
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+    gap: 30px;
+    text-align: center;
+  }
+
+  .service-box {
+    background: white;
+    padding: 30px 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+  }
+
+  .service-box:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  }
+
+  .service-box h3 {
+    margin-bottom: 15px;
+    color: #004aad;
+  }
+
+  .service-box p {
+    color: #555;
+    font-size: 1rem;
+  }
+
+  /* Rodapé */
+  footer {
+    background: #222;
+    color: #aaa;
+    text-align: center;
+    padding: 20px 15px;
+    font-size: 0.9rem;
+  }
+
+  /* Responsividade */
+
+  @media(max-width: 768px) {
+    .hero h1 {
+      font-size: 2.2rem;
+    }
+    .hero p {
+      font-size: 1rem;
+    }
+    nav ul {
+      position: fixed;
+      top: 70px;
+      right: 0;
+      background: #004aad;
+      height: calc(100% - 70px);
+      width: 200px;
+      flex-direction: column;
+      padding-top: 30px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    nav ul.active {
+      transform: translateX(0);
+    }
+    nav ul li {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .menu-toggle {
+      display: flex;
+    }
+  }
+
+  /* Para evitar o scroll lateral no mobile */
+  body, html {
+    overflow-x: hidden;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">MeuSite</div>
+
+  <nav>
+    <ul id="nav-list">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#services">Serviços</a></li>
+      <li><a href="index.html">Contato</a></li>
+    </ul>
+  </nav>
+
+  <div class="menu-toggle" id="menu-toggle" aria-label="Abrir menu" tabindex="0">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+</header>
+
+<section class="hero" id="hero">
+  <h1>Bem-vindo ao MeuSite</h1>
+  <p>Soluções inovadoras para transformar seu negócio com tecnologia e design moderno.</p>
+  <button class="btn-primary" onclick="alert('Vamos começar!')">Começar Agora</button>
+</section>
+
+<section class="services" id="services">
+  <div class="service-box">
+    <h3>Consultoria</h3>
+    <p>Orientação especializada para otimizar processos e aumentar resultados.</p>
+  </div>
+  <div class="service-box">
+    <h3>Desenvolvimento</h3>
+    <p>Criação de soluções personalizadas para atender suas necessidades específicas.</p>
+  </div>
+  <div class="service-box">
+    <h3>Suporte Técnico</h3>
+    <p>Assistência rápida e eficiente para manter seu sistema sempre funcionando.</p>
+  </div>
+</section>
+
+<footer id="contact">
+  <p>© 2025 MeuSite. Todos os direitos reservados.</p>
+  <p>Contato: contato@meusite.com | Tel: (11) 99999-9999</p>
+</footer>
+
+<script>
+  const menuToggle = document.getElementById('menu-toggle');
+  const navList = document.getElementById('nav-list');
+
+  menuToggle.addEventListener('click', () => {
+    navList.classList.toggle('active');
+  });
+
+  menuToggle.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      navList.classList.toggle('active');
+      e.preventDefault();
+    }
+  });
+</script>
+
+</body>
+</html>

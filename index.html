@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfólio - Elan Teixeira</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <nav>
+            <h1>Elan Teixeira</h1>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#projetos">Projetos</a></li>
+                <li><a href="#sobre">Sobre</a></li>
+                <li><a href="#contato">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- HOME -->
+    <section id="home" class="hero">
+        <h2>Eu crio sites modernos e responsivos</h2>
+        <p>HTML • CSS • JavaScript</p>
+        <a href="#contato" class="btn">Fale comigo</a>
+    </section>
+
+    <!-- PROJETOS -->
+    <section id="projetos">
+        <h2>Meus Projetos</h2>
+        <div class="grid">
+            <div class="card">
+                <img src="imagens/img/projeto1.jpg" alt="Landing Page">
+                <h3>Landing Page Responsiva</h3>
+                <p>Site moderno e adaptável para todos os dispositivos.</p>
+                <a href="responsive.html">Ver projeto</a>
+            </div>
+            <div class="card">
+                <img src="imagens/img/projeto2.jpg" alt="To-Do List">
+                <h3>Lista de Tarefas</h3>
+                <p>Aplicativo interativo em JavaScript para gerenciar tarefas.</p>
+                <a href="todo.html">Ver projeto</a>
+            </div>
+            <div class="card">
+                <img src="imagens/img/projeto3.png" alt="API do Clima">
+                <h3>API do Clima</h3>
+                <p>Consulta de temperatura em tempo real usando API pública.</p>
+                <a href="#">Ver projeto</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOBRE -->
+    <section id="sobre">
+        <h2>Sobre Mim</h2>
+        <p>
+            Sou Elan Teixeira, desenvolvedor front-end com foco em criar interfaces rápidas, responsivas e funcionais. 
+            Domino HTML, CSS e JavaScript e tenho experiência em criar soluções digitais que unem design e performance.
+        </p>
+    </section>
+
+    <!-- CONTATO -->
+    <section id="contato">
+        <h2>Entre em Contato</h2>
+        <form id="formContato">
+            <input type="text" placeholder="Seu nome" required>
+            <input type="email" placeholder="Seu e-mail" required>
+            <textarea placeholder="Sua mensagem" required></textarea>
+            <button type="submit">Enviar</button>
+        </form>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2025 - Elan Teixeira | Desenvolvido com ❤️</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
