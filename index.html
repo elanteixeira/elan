@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfólio - Elan Teixeira</title>
     <link rel="stylesheet" href="style.css">
+    
 </head>
 <body>
     <!-- HEADER -->
@@ -67,9 +68,9 @@
         <form id="formContato">
             <input type="text" name="nome" placeholder="Seu nome" required>
             <input type="email" name="email" placeholder="Seu e-mail" required>
-            <textarea placeholder="Sua mensagem" required></textarea>
+            <textarea name="mensagem" placeholder="Sua mensagem" required></textarea>
             <button type="submit">Enviar</button>
-        </form>
+      </form>
     </section>
 
     <!-- FOOTER -->
@@ -77,6 +78,7 @@
         <p>© 2025 - Elan Teixeira | Desenvolvido com ❤️</p>
     </footer>
 
-    <script src="script.js"></script>
+      <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
