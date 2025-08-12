@@ -1,0 +1,322 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador Avançado de Plano de Rigging 3D - Visualização Melhorada</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; overflow: hidden; background: #20232a; color: #eee; }
+    #ui {
+      position: fixed;
+      top: 10px; left: 10px;
+      background: rgba(32,35,42,0.95);
+      padding: 15px;
+      max-width: 320px;
+      max-height: 95vh;
+      overflow-y: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 15px #0af;
+      z-index: 10;
+    }
+    label, input {
+      display: block;
+      margin-bottom: 8px;
+      color: #ccc;
+    }
+    input[type=number] {
+      width: 100%;
+      background: #282c34;
+      border: 1px solid #444;
+      color: #eee;
+      padding: 6px;
+      border-radius: 4px;
+    }
+    button {
+      padding: 8px 12px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #0af;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      margin-top: 8px;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #08c;
+    }
+    #results {
+      margin-top: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 14px;
+      color: #eee;
+    }
+    h2, h3 {
+      color: #0af;
+    }
+  </style>
+</head>
+<body>
+
+<div id="ui">
+  <h2>Plano de Rigging 3D</h2>
+
+  <label for="weight">Peso da carga (kg):</label>
+  <input id="weight" type="number" value="1000" min="1" />
+
+  <label for="numCables">Número de cabos (3 a 6):</label>
+  <input id="numCables" type="number" value="3" min="3" max="6" />
+
+  <div id="pointsContainer"></div>
+
+  <button id="calcBtn">Calcular Tensões</button>
+
+  <div id="results"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+
+<script>
+  const weightInput = document.getElementById('weight');
+  const numCablesInput = document.getElementById('numCables');
+  const pointsContainer = document.getElementById('pointsContainer');
+  const calcBtn = document.getElementById('calcBtn');
+  const resultsDiv = document.getElementById('results');
+
+  function criarInputsCables(n) {
+    pointsContainer.innerHTML = '<h3>Coordenadas dos pontos de ancoragem (x, y, z)</h3>';
+    for(let i = 0; i < n; i++) {
+      const div = document.createElement('div');
+      div.style.marginBottom = '12px';
+      div.innerHTML = `
+        <strong>Cabo ${i+1}</strong><br>
+        X: <input type="number" id="px${i}" value="${(Math.cos(i*2*Math.PI/n)*5).toFixed(2)}" step="0.1" /> 
+        Y: <input type="number" id="py${i}" value="${(Math.sin(i*2*Math.PI/n)*5).toFixed(2)}" step="0.1" /> 
+        Z: <input type="number" id="pz${i}" value="10" step="0.1" min="0" />
+      `;
+      pointsContainer.appendChild(div);
+    }
+  }
+
+  criarInputsCables(parseInt(numCablesInput.value));
+
+  numCablesInput.addEventListener('change', () => {
+    let n = parseInt(numCablesInput.value);
+    if(n < 3) n = 3;
+    if(n > 6) n = 6;
+    numCablesInput.value = n;
+    criarInputsCables(n);
+    resultsDiv.innerHTML = '';
+  });
+
+  // Álgebra linear 3x3 para resolver tensões
+
+  function determinant3x3(m) {
+    return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])
+         - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])
+         + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  }
+
+  function inverse3x3(m) {
+    const det = determinant3x3(m);
+    if(Math.abs(det) < 1e-10) throw "Matriz singular";
+    const invDet = 1/det;
+
+    return [
+      [
+        (m[1][1]*m[2][2] - m[1][2]*m[2][1]) * invDet,
+        (m[0][2]*m[2][1] - m[0][1]*m[2][2]) * invDet,
+        (m[0][1]*m[1][2] - m[0][2]*m[1][1]) * invDet
+      ],
+      [
+        (m[1][2]*m[2][0] - m[1][0]*m[2][2]) * invDet,
+        (m[0][0]*m[2][2] - m[0][2]*m[2][0]) * invDet,
+        (m[0][2]*m[1][0] - m[0][0]*m[1][2]) * invDet
+      ],
+      [
+        (m[1][0]*m[2][1] - m[1][1]*m[2][0]) * invDet,
+        (m[0][1]*m[2][0] - m[0][0]*m[2][1]) * invDet,
+        (m[0][0]*m[1][1] - m[0][1]*m[1][0]) * invDet
+      ],
+    ];
+  }
+
+  function multiplyMatrixVector(m,v) {
+    return [
+      m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
+      m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
+      m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2]
+    ];
+  }
+
+  function normalize(v) {
+    const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    return [v[0]/len, v[1]/len, v[2]/len];
+  }
+
+  function calcularTensoes(cabos, peso) {
+    if(cabos.length !== 3) return null; // só para 3 cabos
+
+    let U = [[],[],[]];
+    for(let i=0; i<3; i++) {
+      const v = [
+        -cabos[i][0],
+        -cabos[i][1],
+        -cabos[i][2]
+      ];
+      const u = normalize(v);
+      U[0].push(u[0]);
+      U[1].push(u[1]);
+      U[2].push(u[2]);
+    }
+
+    const W = [0,0,-peso];
+
+    try {
+      const invU = inverse3x3(U);
+      const tensoes = multiplyMatrixVector(invU, W.map(x => -x));
+      return tensoes;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  // Three.js init e render
+
+  let scene, camera, renderer;
+  let cablesGroup, loadMesh;
+
+  function init3D() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x20232a);
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.set(15, 15, 25);
+    camera.lookAt(0, 0, 0);
+
+    renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Luz ambiente forte e luz direcional mais suave
+    const ambientLight = new THREE.AmbientLight(0xaaaaaa, 1.0);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    directionalLight.position.set(20, 30, 10);
+    scene.add(directionalLight);
+
+    // Grupo para cabos
+    cablesGroup = new THREE.Group();
+    scene.add(cablesGroup);
+
+    // Carga - caixa azul brilhante
+    const geometry = new THREE.BoxGeometry(3,3,3);
+    const material = new THREE.MeshStandardMaterial({color: 0x0077ff, metalness: 0.7, roughness: 0.2});
+    loadMesh = new THREE.Mesh(geometry, material);
+    loadMesh.position.set(0, 0, 0);
+    scene.add(loadMesh);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  }
+
+  function drawCables(cabos, tensoes) {
+    while(cablesGroup.children.length) {
+      const child = cablesGroup.children[0];
+      cablesGroup.remove(child);
+      if(child.geometry) child.geometry.dispose();
+      if(child.material) child.material.dispose();
+    }
+
+    const limiteCarga = 1500;
+
+    for(let i=0; i<cabos.length; i++) {
+      const tension = tensoes ? tensoes[i] : 0;
+      const colorOk = 0x00ff00; // verde claro
+      const colorAlerta = 0xff2200; // vermelho
+
+      const color = tension > limiteCarga ? colorAlerta : colorOk;
+      const material = new THREE.LineBasicMaterial({color: color, linewidth: 4});
+
+      const points = [];
+      points.push(new THREE.Vector3(cabos[i][0], cabos[i][1], cabos[i][2]));
+      points.push(new THREE.Vector3(0, 0, 0));
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(geometry, material);
+      cablesGroup.add(line);
+
+      // Esfera brilhante no ponto ancoragem
+      const sphereGeom = new THREE.SphereGeometry(0.4, 16, 16);
+      const sphereMat = new THREE.MeshStandardMaterial({color});
+      const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+      sphere.position.set(cabos[i][0], cabos[i][1], cabos[i][2]);
+      cablesGroup.add(sphere);
+    }
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
+
+  calcBtn.onclick = () => {
+    resultsDiv.innerHTML = '';
+    const peso = parseFloat(weightInput.value);
+    let n = parseInt(numCablesInput.value);
+    if(isNaN(peso) || peso <= 0) {
+      resultsDiv.innerHTML = '<p style="color:red">Informe peso válido.</p>';
+      return;
+    }
+    if(isNaN(n) || n < 3 || n > 6) {
+      resultsDiv.innerHTML = '<p style="color:red">Número de cabos deve ser entre 3 e 6.</p>';
+      return;
+    }
+
+    const pontos = [];
+    for(let i=0; i<n; i++) {
+      const x = parseFloat(document.getElementById(`px${i}`).value);
+      const y = parseFloat(document.getElementById(`py${i}`).value);
+      const z = parseFloat(document.getElementById(`pz${i}`).value);
+      if([x,y,z].some(v => isNaN(v))) {
+        resultsDiv.innerHTML = `<p style="color:red">Informe coordenadas válidas para cabo ${i+1}.</p>`;
+        return;
+      }
+      pontos.push([x,y,z]);
+    }
+
+    if(n === 3) {
+      const tensoes = calcularTensoes(pontos, peso);
+      if(tensoes === null) {
+        resultsDiv.innerHTML = '<p style="color:red">Sistema não tem solução (pontos colineares ou mal posicionados).</p>';
+        drawCables(pontos, null);
+        return;
+      }
+      let html = `<h3>Tensões nos cabos (kgf)</h3><ul>`;
+      const limiteCarga = 1500;
+      tensoes.forEach((t, i) => {
+        const cor = t > limiteCarga ? 'red' : 'white';
+        html += `<li style="color:${cor}">Cabo ${i+1}: ${t.toFixed(2)} kg</li>`;
+      });
+      html += '</ul>';
+      resultsDiv.innerHTML = html;
+
+      drawCables(pontos, tensoes);
+    } else {
+      resultsDiv.innerHTML = '<p>Por enquanto, só suporta cálculo para 3 cabos.</p>';
+      drawCables(pontos, null);
+    }
+  };
+
+  criarInputsCables(parseInt(numCablesInput.value));
+  init3D();
+  animate();
+
+</script>
+
+</body>
+</html>
