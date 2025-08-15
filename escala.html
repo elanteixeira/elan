@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendário Escala 14x14</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f7f7f7;
+  margin: 0; padding: 20px;
+}
+h1 { text-align: center; }
+.controls { text-align: center; margin-bottom: 20px; }
+input[type="date"], button { padding: 6px; font-size: 16px; margin: 0 5px; cursor: pointer; }
+.calendar-container { display: flex; flex-direction: column; align-items: center; }
+.month {
+  margin-bottom: 30px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 650px;
+}
+.month-name { text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 18px; }
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  text-align: center;
+}
+.day-header { font-weight: bold; padding: 5px; }
+.day { padding: 10px; border-radius: 6px; background: #fff; border: 1px solid #ddd; min-height: 35px; }
+.start { background: lightgreen; }
+.work { background: red; color: #fff; }
+.off { background: lightblue; }
+.end { background: gray; color: #fff; }
+#info { text-align: center; margin-top: 20px; font-size: 18px; font-weight: bold; }
+.nav-buttons { text-align: center; margin-bottom: 10px; }
+@media (max-width: 600px) {
+  .day { font-size: 12px; padding: 8px; }
+  .day-header { font-size: 12px; }
+  button, input[type="date"] { font-size: 14px; padding: 6px 10px; }
+}
+</style>
+</head>
+<body>
+
+<h1>Calendário de Escala 14x14</h1>
+
+<div class="controls">
+  <label>Data de embarque: 
+    <input type="date" id="startDate">
+  </label>
+  <button id="generateScale">Gerar Escala</button>
+</div>
+
+<div class="nav-buttons">
+  <button id="prevMonth">Anterior</button>
+  <button id="nextMonth">Próximo</button>
+</div>
+
+<div class="calendar-container" id="calendarContainer"></div>
+<div id="info"></div>
+
+<script>
+const container = document.getElementById("calendarContainer");
+const startDateInput = document.getElementById("startDate");
+const generateBtn = document.getElementById("generateScale");
+const infoDiv = document.getElementById("info");
+const prevBtn = document.getElementById("prevMonth");
+const nextBtn = document.getElementById("nextMonth");
+
+let selectedDate = null;
+let currentYear, currentMonth;
+const daysOfWeek = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+// Cria o mês com dataset correto
+function generateMonth(year, month) {
+  const monthDiv = document.createElement("div");
+  monthDiv.classList.add("month");
+
+  const monthName = new Date(year, month).toLocaleString("pt-BR", { month: "long", year: "numeric" });
+  const title = document.createElement("div");
+  title.classList.add("month-name");
+  title.textContent = monthName.toUpperCase();
+  monthDiv.appendChild(title);
+
+  const calendarDiv = document.createElement("div");
+  calendarDiv.classList.add("calendar");
+
+  // Cabeçalho
+  daysOfWeek.forEach(d => {
+    const header = document.createElement("div");
+    header.textContent = d;
+    header.classList.add("day-header");
+    calendarDiv.appendChild(header);
+  });
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startWeekDay = firstDay.getDay();
+  const daysInMonth = lastDay.getDate();
+
+  for (let i = 0; i < startWeekDay; i++) calendarDiv.appendChild(document.createElement("div"));
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const cell = document.createElement("div");
+    cell.textContent = day;
+    cell.classList.add("day");
+    const fullDate = new Date(year, month, day);
+    cell.dataset.date = fullDate.toISOString().split("T")[0];
+    calendarDiv.appendChild(cell);
+  }
+
+  monthDiv.appendChild(calendarDiv);
+  return monthDiv;
+}
+
+// Mostra mês atual
+function showMonth(year, month) {
+  container.innerHTML = "";
+  container.appendChild(generateMonth(year, month));
+  if(selectedDate) applyScale();
+}
+
+// Inicialização
+const now = new Date();
+currentYear = now.getFullYear();
+currentMonth = now.getMonth();
+showMonth(currentYear, currentMonth);
+
+// Navegação
+prevBtn.addEventListener("click", () => {
+  currentMonth--;
+  if(currentMonth < 0){ currentMonth=11; currentYear--; }
+  showMonth(currentYear, currentMonth);
+});
+nextBtn.addEventListener("click", () => {
+  currentMonth++;
+  if(currentMonth > 11){ currentMonth=0; currentYear++; }
+  showMonth(currentYear, currentMonth);
+});
+
+// Seleção de data de embarque
+startDateInput.addEventListener("change", () => {
+  if(!startDateInput.value) return;
+  selectedDate = new Date(startDateInput.value + "T00:00:00");
+  if(isNaN(selectedDate)) return;
+  currentYear = selectedDate.getFullYear();
+  currentMonth = selectedDate.getMonth();
+  showMonth(currentYear, currentMonth);
+  infoDiv.textContent = "";
+});
+
+// Aplica cores da escala 14x14
+function applyScale() {
+  if(!selectedDate) return;
+  const days = container.querySelectorAll(".day");
+  days.forEach(cell=>{
+    cell.classList.remove("start","work","off","end");
+    const cellDate = new Date(cell.dataset.date);
+    const diffDays = Math.floor((cellDate - selectedDate)/(1000*60*60*24));
+    if(diffDays === 0) cell.classList.add("start");
+    else if(diffDays > 0){
+      const cycleDay = diffDays % 28;
+      if(cycleDay < 14) cell.classList.add("work");
+      else cell.classList.add("off");
+      if(cycleDay === 13){ cell.classList.remove("work"); cell.classList.add("end"); }
+    }
+  });
+  const desembarque = new Date(selectedDate);
+  desembarque.setDate(desembarque.getDate() + 13);
+  infoDiv.textContent = `Embarque: ${selectedDate.toLocaleDateString("pt-BR")} | Desembarque: ${desembarque.toLocaleDateString("pt-BR")}`;
+}
+
+// Botão gerar escala
+generateBtn.addEventListener("click", ()=>{
+  if(!selectedDate) return alert("Selecione a data de embarque primeiro!");
+  applyScale();
+});
+</script>
+
+</body>
+</html>
